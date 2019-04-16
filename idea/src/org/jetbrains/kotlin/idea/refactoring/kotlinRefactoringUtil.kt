@@ -5,6 +5,7 @@
 
 package org.jetbrains.kotlin.idea.refactoring
 
+import com.intellij.application.subscribe
 import com.intellij.codeInsight.daemon.impl.quickfix.CreateFromUsageUtils
 import com.intellij.codeInsight.unwrap.RangeSplitter
 import com.intellij.codeInsight.unwrap.UnwrapHandler
@@ -14,8 +15,8 @@ import com.intellij.lang.injection.InjectedLanguageManager
 import com.intellij.lang.java.JavaLanguage
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.TransactionGuard
-import com.intellij.openapi.command.CommandAdapter
 import com.intellij.openapi.command.CommandEvent
+import com.intellij.openapi.command.CommandListener
 import com.intellij.openapi.command.CommandProcessor
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.colors.EditorColors
@@ -28,10 +29,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.roots.JavaProjectRootsUtil
 import com.intellij.openapi.ui.DialogWrapper
 import com.intellij.openapi.ui.Messages
-import com.intellij.openapi.ui.popup.JBPopup
-import com.intellij.openapi.ui.popup.JBPopupAdapter
-import com.intellij.openapi.ui.popup.JBPopupFactory
-import com.intellij.openapi.ui.popup.LightweightWindowEvent
+import com.intellij.openapi.ui.popup.*
 import com.intellij.openapi.util.Pass
 import com.intellij.openapi.util.TextRange
 import com.intellij.openapi.util.text.StringUtil
@@ -84,7 +82,6 @@ import org.jetbrains.kotlin.idea.refactoring.rename.canonicalRender
 import org.jetbrains.kotlin.idea.util.*
 import org.jetbrains.kotlin.idea.util.string.collapseSpaces
 import org.jetbrains.kotlin.j2k.ConverterSettings
-import org.jetbrains.kotlin.j2k.JavaToKotlinConverter
 import org.jetbrains.kotlin.lexer.KtTokens
 import org.jetbrains.kotlin.name.FqName
 import org.jetbrains.kotlin.name.FqNameUnsafe
@@ -274,7 +271,7 @@ fun <T, E : PsiElement> getPsiElementPopup(
 
     return with(PopupChooserBuilderWrapper<E>(list)) {
         title?.let { setTitle(it) }
-        renderer.installSpeedSearch(this, true)
+        renderer.installSpeedSearch(this as IPopupChooserBuilder<*>, true)
         setItemChoosenCallback {
             val index = list.selectedIndex
             if (index >= 0) {
@@ -533,8 +530,8 @@ fun createJavaMethod(template: PsiMethod, targetClass: PsiClass): PsiMethod {
         method.modifierList.setModifierProperty(PsiModifier.FINAL, false)
     }
 
-    copyTypeParameters(template, method) { method, typeParameterList ->
-        method.addAfter(typeParameterList, method.modifierList)
+    copyTypeParameters(template, method) { psiMethod, typeParameterList ->
+        psiMethod.addAfter(typeParameterList, psiMethod.modifierList)
     }
 
     val targetParamList = method.parameterList
@@ -600,8 +597,8 @@ fun createJavaClass(klass: KtClass, targetClass: PsiClass?, forcePlainClass: Boo
         javaClass.modifierList!!.setModifierProperty(PsiModifier.ABSTRACT, false)
     }
 
-    copyTypeParameters(template, javaClass) { klass, typeParameterList ->
-        klass.addAfter(typeParameterList, klass.nameIdentifier)
+    copyTypeParameters(template, javaClass) { clazz, typeParameterList ->
+        clazz.addAfter(typeParameterList, clazz.nameIdentifier)
     }
 
     // Turning interface to class
@@ -733,7 +730,7 @@ fun KtElement?.validateElement(errorMessage: String) {
 
 fun invokeOnceOnCommandFinish(action: () -> Unit) {
     val commandProcessor = CommandProcessor.getInstance()
-    val listener = object : CommandAdapter() {
+    val listener = object : CommandListener {
         override fun beforeCommandFinished(event: CommandEvent) {
             action()
             commandProcessor.removeCommandListener(this)

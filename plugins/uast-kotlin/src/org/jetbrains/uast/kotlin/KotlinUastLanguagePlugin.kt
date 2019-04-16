@@ -168,7 +168,10 @@ internal object KotlinConverter {
                                    givenParent: UElement?,
                                    requiredType: Class<out UElement>?): UElement? {
         fun <P : PsiElement> build(ctor: (P, UElement?) -> UElement): () -> UElement? {
-            return { ctor(element as P, givenParent) }
+            return {
+                @Suppress("UNCHECKED_CAST")
+                ctor(element as P, givenParent)
+            }
         }
 
         return with (requiredType) { when (element) {
@@ -206,7 +209,7 @@ internal object KotlinConverter {
                 }
             }
             is KtLiteralStringTemplateEntry, is KtEscapeStringTemplateEntry -> el<ULiteralExpression>(build(::KotlinStringULiteralExpression))
-            is KtStringTemplateEntry -> element.expression?.let { convertExpression(it, givenParent, requiredType) } ?: expr<UExpression> { UastEmptyExpression }
+            is KtStringTemplateEntry -> element.expression?.let { convertExpression(it, givenParent, requiredType) } ?: expr<UExpression> { UastEmptyExpression(null) }
             is KtWhenEntry -> el<USwitchClauseExpressionWithBody>(build(::KotlinUSwitchEntry))
             is KtWhenCondition -> convertWhenCondition(element, givenParent, requiredType)
             is KtTypeReference -> el<UTypeReferenceExpression> { LazyKotlinUTypeReferenceExpression(element, givenParent) }
@@ -268,7 +271,10 @@ internal object KotlinConverter {
                                    givenParent: UElement?,
                                    requiredType: Class<out UElement>? = null): UExpression? {
         fun <P : PsiElement> build(ctor: (P, UElement?) -> UExpression): () -> UExpression? {
-            return { ctor(expression as P, givenParent) }
+            return {
+                @Suppress("UNCHECKED_CAST")
+                ctor(expression as P, givenParent)
+            }
         }
 
         return with (requiredType) { when (expression) {
@@ -340,7 +346,7 @@ internal object KotlinConverter {
                     KotlinUDeclarationsExpression(givenParent).apply {
                         declarations = listOf(KotlinUClass.create(lightClass, this))
                     }
-                } ?: UastEmptyExpression
+                } ?: UastEmptyExpression(null)
             }
             is KtFunction -> if (expression.name.isNullOrEmpty()) {
                 expr<ULambdaExpression>(build(::createLocalFunctionLambdaExpression))
@@ -386,7 +392,7 @@ internal object KotlinConverter {
                 is KtWhenConditionWithExpression ->
                     condition.expression?.let { KotlinConverter.convertExpression(it, givenParent, requiredType) }
 
-                else -> expr<UExpression> { UastEmptyExpression }
+                else -> expr<UExpression> { UastEmptyExpression(null) }
             }
         }
     }
@@ -407,13 +413,20 @@ internal object KotlinConverter {
         givenParent: UElement?,
         requiredType: Class<out UElement>?
     ): UElement? {
-        fun <P : PsiElement> build(ctor: (P, UElement?) -> UElement): () -> UElement? = { ctor(element as P, givenParent) }
+        fun <P : PsiElement> build(ctor: (P, UElement?) -> UElement): () -> UElement? = {
+            @Suppress("UNCHECKED_CAST")
+            ctor(element as P, givenParent)
+        }
 
-        fun <P : PsiElement, K : KtElement> buildKt(ktElement: K, ctor: (P, K, UElement?) -> UElement): () -> UElement? =
-            { ctor(element as P, ktElement, givenParent) }
+        fun <P : PsiElement, K : KtElement> buildKt(ktElement: K, ctor: (P, K, UElement?) -> UElement): () -> UElement? = {
+            @Suppress("UNCHECKED_CAST")
+            ctor(element as P, ktElement, givenParent)
+        }
 
-        fun <P : PsiElement, K : KtElement> buildKtOpt(ktElement: K?, ctor: (P, K?, UElement?) -> UElement): () -> UElement? =
-            { ctor(element as P, ktElement, givenParent) }
+        fun <P : PsiElement, K : KtElement> buildKtOpt(ktElement: K?, ctor: (P, K?, UElement?) -> UElement): () -> UElement? = {
+            @Suppress("UNCHECKED_CAST")
+            ctor(element as P, ktElement, givenParent)
+        }
 
         val original = element.originalElement
         return with(requiredType) {
@@ -534,7 +547,7 @@ internal object KotlinConverter {
     }
 
     internal fun convertOrEmpty(expression: KtExpression?, parent: UElement?): UExpression {
-        return expression?.let { convertExpression(it, parent, null) } ?: UastEmptyExpression
+        return expression?.let { convertExpression(it, parent, null) } ?: UastEmptyExpression(null)
     }
 
     internal fun convertOrNull(expression: KtExpression?, parent: UElement?): UExpression? {
@@ -551,6 +564,7 @@ internal object KotlinConverter {
         val file = createAnalyzableFile("dummy.kt", text, context)
         val declarations = file.declarations
         assert(declarations.size == 1) { "${declarations.size} declarations in $text" }
+        @Suppress("UNCHECKED_CAST")
         return declarations.first() as TDeclaration
     }
 }

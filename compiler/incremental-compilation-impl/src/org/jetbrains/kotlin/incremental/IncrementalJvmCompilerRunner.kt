@@ -307,6 +307,7 @@ class IncrementalJvmCompilerRunner(
                 KotlinClassHeader.Kind.MULTIFILE_CLASS_PART -> {
                     result.addAll(partsByFacadeName(outputClass.classHeader.multifileClassName!!))
                 }
+                else -> error("Illegal state")
             }
         }
 

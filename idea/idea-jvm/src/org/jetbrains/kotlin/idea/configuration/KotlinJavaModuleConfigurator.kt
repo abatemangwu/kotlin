@@ -139,7 +139,7 @@ open class KotlinJavaModuleConfigurator protected constructor() : KotlinWithLibr
         const val NAME = "java"
 
         val instance: KotlinJavaModuleConfigurator
-            get() = Extensions.findExtension(KotlinProjectConfigurator.EP_NAME, KotlinJavaModuleConfigurator::class.java)
+            get() = KotlinProjectConfigurator.EP_NAME.findExtensionOrFail(KotlinJavaModuleConfigurator::class.java)
     }
 
     private fun hasBrokenJsRuntime(module: Module): Boolean {

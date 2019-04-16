@@ -106,6 +106,7 @@ class PartialBodyResolveFilter(
                 when (level) {
                     MarkLevel.NEED_REFERENCE_RESOLVE -> nameFilter.addUsedNames(statement)
                     MarkLevel.NEED_COMPLETION -> nameFilter.addAllNames()
+                    else -> error("Illegal state")
                 }
             }
 

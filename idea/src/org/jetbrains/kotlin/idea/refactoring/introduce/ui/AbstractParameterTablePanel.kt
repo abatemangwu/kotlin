@@ -68,12 +68,13 @@ abstract class AbstractParameterTablePanel<Param, UIParam : AbstractParameterTab
         table.selectionModel.selectionMode = ListSelectionModel.SINGLE_SELECTION
         table.cellSelectionEnabled = true
 
-        with(table.columnModel.getColumn(CHECKMARK_COLUMN)) {
-            TableUtil.setupCheckboxColumn(this)
+        val columnModel = table.columnModel
+        with(columnModel.getColumn(CHECKMARK_COLUMN)) {
+            TableUtil.setupCheckboxColumn(this, columnModel.columnMargin)
             headerValue = ""
             cellRenderer = object : BooleanTableCellRenderer() {
                 override fun getTableCellRendererComponent(
-                        table: JTable, value: Any?, isSelected: Boolean, hasFocus: Boolean, row: Int, column: Int
+                    table: JTable, value: Any?, isSelected: Boolean, hasFocus: Boolean, row: Int, column: Int
                 ): Component {
                     val rendererComponent = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column)
                     rendererComponent.isEnabled = this@AbstractParameterTablePanel.isEnabled
@@ -83,7 +84,7 @@ abstract class AbstractParameterTablePanel<Param, UIParam : AbstractParameterTab
             }
         }
 
-        table.columnModel.getColumn(PARAMETER_NAME_COLUMN).headerValue = "Name"
+        columnModel.getColumn(PARAMETER_NAME_COLUMN).headerValue = "Name"
 
         createAdditionalColumns()
 

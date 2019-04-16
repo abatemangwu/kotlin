@@ -19,7 +19,6 @@ package org.jetbrains.kotlin.idea.refactoring.rename
 import com.intellij.openapi.actionSystem.DataContext
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.extensions.ExtensionPointName
-import com.intellij.openapi.extensions.Extensions
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
@@ -31,7 +30,7 @@ class KotlinRenameDispatcherHandler : RenameHandler {
     companion object {
         val EP_NAME = ExtensionPointName<RenameHandler>("org.jetbrains.kotlin.renameHandler")
 
-        private val handlers: Array<out RenameHandler> get() = Extensions.getExtensions(EP_NAME)
+        private val handlers: List<RenameHandler> get() = EP_NAME.extensionList
     }
 
     internal fun getRenameHandler(dataContext: DataContext): RenameHandler? {

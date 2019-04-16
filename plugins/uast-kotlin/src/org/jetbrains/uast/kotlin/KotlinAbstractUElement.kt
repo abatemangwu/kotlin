@@ -53,26 +53,26 @@ abstract class KotlinAbstractUElement(private val givenParent: UElement?) : Kotl
 
         if (psi is KtAnnotationEntry) {
             val parentUnwrapped = KotlinConverter.unwrapElements(parent) ?: return null
-            val target = psi.useSiteTarget?.getAnnotationUseSiteTarget()
-            when (target) {
+            when (psi.useSiteTarget?.getAnnotationUseSiteTarget()) {
                 AnnotationUseSiteTarget.PROPERTY_GETTER ->
                     parent = (parentUnwrapped as? KtProperty)?.getter
-                             ?: (parentUnwrapped as? KtParameter)?.toLightGetter()
-                             ?: parent
+                        ?: (parentUnwrapped as? KtParameter)?.toLightGetter()
+                                ?: parent
 
                 AnnotationUseSiteTarget.PROPERTY_SETTER ->
                     parent = (parentUnwrapped as? KtProperty)?.setter
-                             ?: (parentUnwrapped as? KtParameter)?.toLightSetter()
-                             ?: parent
+                        ?: (parentUnwrapped as? KtParameter)?.toLightSetter()
+                                ?: parent
                 AnnotationUseSiteTarget.FIELD ->
                     parent = (parentUnwrapped as? KtProperty)
-                             ?: (parentUnwrapped as? KtParameter)
-                                     ?.takeIf { it.isPropertyParameter() }
-                                     ?.let(LightClassUtil::getLightClassBackingField)
-                             ?: parent
+                        ?: (parentUnwrapped as? KtParameter)
+                            ?.takeIf { it.isPropertyParameter() }
+                            ?.let(LightClassUtil::getLightClassBackingField)
+                                ?: parent
                 AnnotationUseSiteTarget.SETTER_PARAMETER ->
                     parent = (parentUnwrapped as? KtParameter)
-                                     ?.toLightSetter()?.parameterList?.parameters?.firstOrNull() ?: parent
+                        ?.toLightSetter()?.parameterList?.parameters?.firstOrNull() ?: parent
+                else -> error("Illegal state")
             }
         }
         if (psi is UastKotlinPsiVariable && parent != null) {

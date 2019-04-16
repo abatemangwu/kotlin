@@ -10,7 +10,7 @@ import com.intellij.codeInsight.daemon.*
 import com.intellij.codeInsight.daemon.impl.LineMarkerNavigator
 import com.intellij.codeInsight.daemon.impl.MarkerType
 import com.intellij.codeInsight.daemon.impl.PsiElementListNavigator
-import com.intellij.codeInsight.navigation.ListBackgroundUpdaterTask
+import com.intellij.codeInsight.navigation.BackgroundUpdaterTask
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.actionSystem.IdeActions
 import com.intellij.openapi.editor.Document
@@ -134,7 +134,7 @@ data class NavigationPopupDescriptor(
     val title: String,
     val findUsagesTitle: String,
     val renderer: ListCellRenderer<*>,
-    val updater: ListBackgroundUpdaterTask? = null
+    val updater: BackgroundUpdaterTask? = null
 ) {
     fun showPopup(e: MouseEvent?) {
         PsiElementListNavigator.openTargets(e, targets.toTypedArray(), title, findUsagesTitle, renderer, updater)

@@ -10,8 +10,7 @@ import com.intellij.debugger.DebuggerBundle
 import com.intellij.debugger.DebuggerInvocationUtil
 import com.intellij.debugger.DebuggerManagerEx
 import com.intellij.debugger.impl.DebuggerContextImpl
-import com.intellij.openapi.application.Result
-import com.intellij.openapi.command.WriteCommandAction
+import com.intellij.openapi.command.WriteCommandAction.writeCommandAction
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.ScrollType
 import com.intellij.openapi.progress.ProgressIndicator
@@ -21,8 +20,8 @@ import com.intellij.openapi.util.TextRange
 import org.jetbrains.kotlin.idea.KotlinBundle
 import org.jetbrains.kotlin.idea.caches.resolve.analyze
 import org.jetbrains.kotlin.idea.codeInsight.surroundWith.expression.KotlinExpressionSurrounder
-import org.jetbrains.kotlin.idea.debugger.evaluate.KotlinRuntimeTypeEvaluator
 import org.jetbrains.kotlin.idea.core.ShortenReferences
+import org.jetbrains.kotlin.idea.debugger.evaluate.KotlinRuntimeTypeEvaluator
 import org.jetbrains.kotlin.psi.*
 import org.jetbrains.kotlin.resolve.DescriptorUtils
 import org.jetbrains.kotlin.resolve.lazy.BodyResolveMode
@@ -73,30 +72,29 @@ class KotlinRuntimeTypeCastSurrounder: KotlinExpressionSurrounder() {
             hold()
 
             val project = myEditor.project
-            DebuggerInvocationUtil.invokeLater(project, Runnable {
-                    object : WriteCommandAction<Any>(project, CodeInsightBundle.message("command.name.surround.with.runtime.cast")) {
-                        override fun run(result: Result<Any>) {
-                            try {
-                                val factory = KtPsiFactory(myElement.project)
+            DebuggerInvocationUtil.invokeLater(project, {
+                writeCommandAction(project)
+                    .withName(CodeInsightBundle.message("command.name.surround.with.runtime.cast"))
+                    .run<Throwable> {
+                        try {
+                            val factory = KtPsiFactory(myElement.project)
 
-                                val fqName = DescriptorUtils.getFqName(type.constructor.declarationDescriptor!!)
-                                val parentCast = factory.createExpression("(expr as " + fqName.asString() + ")") as KtParenthesizedExpression
-                                val cast = parentCast.expression as KtBinaryExpressionWithTypeRHS
-                                cast.left.replace(myElement)
-                                val expr = myElement.replace(parentCast) as KtExpression
+                            val fqName = DescriptorUtils.getFqName(type.constructor.declarationDescriptor!!)
+                            val parentCast = factory.createExpression("(expr as " + fqName.asString() + ")") as KtParenthesizedExpression
+                            val cast = parentCast.expression as KtBinaryExpressionWithTypeRHS
+                            cast.left.replace(myElement)
+                            val expr = myElement.replace(parentCast) as KtExpression
 
-                                ShortenReferences.DEFAULT.process(expr)
+                            ShortenReferences.DEFAULT.process(expr)
 
-                                val range = expr.textRange
-                                myEditor.selectionModel.setSelection(range.startOffset, range.endOffset)
-                                myEditor.caretModel.moveToOffset(range.endOffset)
-                                myEditor.scrollingModel.scrollToCaret(ScrollType.RELATIVE)
-                            }
-                            finally {
-                                release()
-                            }
+                            val range = expr.textRange
+                            myEditor.selectionModel.setSelection(range.startOffset, range.endOffset)
+                            myEditor.caretModel.moveToOffset(range.endOffset)
+                            myEditor.scrollingModel.scrollToCaret(ScrollType.RELATIVE)
+                        } finally {
+                            release()
                         }
-                    }.execute()
+                    }
             }, myProgressIndicator.modalityState)
         }
 

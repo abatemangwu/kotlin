@@ -17,6 +17,7 @@
 package org.jetbrains.kotlin.idea.injection
 
 import com.intellij.codeInsight.AnnotationUtil
+import com.intellij.lang.injection.InjectedLanguageManager
 import com.intellij.lang.injection.MultiHostInjector
 import com.intellij.lang.injection.MultiHostRegistrar
 import com.intellij.openapi.application.ApplicationManager
@@ -29,7 +30,6 @@ import com.intellij.patterns.PatternConditionPlus
 import com.intellij.patterns.PsiClassNamePatternCondition
 import com.intellij.patterns.ValuePatternCondition
 import com.intellij.psi.*
-import com.intellij.psi.impl.source.tree.injected.InjectedLanguageUtil
 import com.intellij.psi.search.LocalSearchScope
 import com.intellij.psi.search.searches.ReferencesSearch
 import com.intellij.psi.util.CachedValueProvider
@@ -138,7 +138,7 @@ class KotlinLanguageInjector(
             InjectorUtils.putInjectedFileUserData(
                 ktHost,
                 language,
-                InjectedLanguageUtil.FRANKENSTEIN_INJECTION,
+                InjectedLanguageManager.FRANKENSTEIN_INJECTION,
                 if (parts.isUnparsable) java.lang.Boolean.TRUE else null
             )
         }

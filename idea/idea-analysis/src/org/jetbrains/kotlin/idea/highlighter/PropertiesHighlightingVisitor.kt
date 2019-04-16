@@ -42,7 +42,7 @@ internal class PropertiesHighlightingVisitor(holder: AnnotationHolder, bindingCo
         val resolvedCall = expression.getResolvedCall(bindingContext)
 
         val attributesKey = resolvedCall?.let { call ->
-            Extensions.getExtensions(HighlighterExtension.EP_NAME).firstNotNullResult { extension ->
+            HighlighterExtension.EP_NAME.extensionList.firstNotNullResult { extension ->
                 extension.highlightCall(expression, call)
             }
         } ?: attributeKeyByPropertyType(target)

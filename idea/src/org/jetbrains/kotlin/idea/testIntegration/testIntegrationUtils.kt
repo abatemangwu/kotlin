@@ -17,7 +17,6 @@
 package org.jetbrains.kotlin.idea.testIntegration
 
 import com.intellij.lang.java.JavaLanguage
-import com.intellij.openapi.extensions.Extensions
 import com.intellij.testIntegration.TestFramework
 import com.intellij.util.SmartList
 import org.jetbrains.kotlin.asJava.toLightClass
@@ -25,7 +24,7 @@ import org.jetbrains.kotlin.psi.KtClassOrObject
 
 fun findSuitableFrameworks(klass: KtClassOrObject): List<TestFramework> {
     val lightClass = klass.toLightClass() ?: return emptyList()
-    val frameworks = Extensions.getExtensions(TestFramework.EXTENSION_NAME).filter { it.language == JavaLanguage.INSTANCE }
+    val frameworks = TestFramework.EXTENSION_NAME.extensionList.filter { it.language == JavaLanguage.INSTANCE }
     return frameworks.firstOrNull { it.isTestClass(lightClass) }?.let { listOf(it) }
-           ?: frameworks.filterTo(SmartList<TestFramework>()) { it.isPotentialTestClass(lightClass) }
+        ?: frameworks.filterTo(SmartList<TestFramework>()) { it.isPotentialTestClass(lightClass) }
 }

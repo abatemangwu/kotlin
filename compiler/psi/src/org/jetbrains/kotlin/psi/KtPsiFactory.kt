@@ -291,6 +291,7 @@ class KtPsiFactory @JvmOverloads constructor(private val project: Project, val m
         val file = createFile(text)
         val declarations = file.declarations
         assert(declarations.size == 1) { "${declarations.size} declarations in $text" }
+        @Suppress("UNCHECKED_CAST")
         return declarations.first() as TDeclaration
     }
 

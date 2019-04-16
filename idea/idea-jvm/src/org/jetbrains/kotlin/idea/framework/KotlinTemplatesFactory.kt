@@ -49,7 +49,7 @@ class KotlinTemplatesFactory : ProjectTemplatesFactory() {
                                                          KotlinIcons.JS)
                 )
         )
-        result.addAll(Extensions.getExtensions(EP_NAME).map { BuilderBasedTemplate(it) })
+        result.addAll(EP_NAME.extensionList.map { BuilderBasedTemplate(it) })
         return result.toTypedArray()
     }
 }

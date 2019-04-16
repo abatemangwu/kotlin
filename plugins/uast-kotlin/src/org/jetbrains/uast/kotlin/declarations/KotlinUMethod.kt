@@ -30,9 +30,9 @@ import org.jetbrains.uast.java.internal.JavaUElementWithComments
 import org.jetbrains.uast.kotlin.*
 
 open class KotlinUMethod(
-        psi: KtLightMethod,
-        givenParent: UElement?
-) : KotlinAbstractUElement(givenParent), UAnnotationMethod, UMethodTypeSpecific, UAnchorOwner, JavaUElementWithComments, PsiMethod by psi {
+    psi: KtLightMethod,
+    givenParent: UElement?
+) : KotlinAbstractUElement(givenParent), UAnnotationMethod, UMethod, UAnchorOwner, JavaUElementWithComments, PsiMethod by psi {
     override val comments: List<UComment>
         get() = super<KotlinAbstractUElement>.comments
 

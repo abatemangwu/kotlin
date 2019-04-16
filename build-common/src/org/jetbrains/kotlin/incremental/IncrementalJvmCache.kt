@@ -162,6 +162,7 @@ open class IncrementalJvmCache(
                 constantsMap.process(kotlinClass, changesCollector)
                 inlineFunctionsMap.process(kotlinClass, changesCollector)
             }
+            else -> error("Illegal state")
         }
     }
 

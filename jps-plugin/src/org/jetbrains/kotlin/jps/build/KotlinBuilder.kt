@@ -271,7 +271,7 @@ class KotlinBuilder : ModuleLevelBuilder(BuilderCategory.SOURCE_PROCESSOR) {
         if (chunk.isDummy(context))
             return NOTHING_DONE
 
-        val kotlinTarget = context.kotlinBuildTargets[chunk.representativeTarget()] ?: return OK
+        val kotlinTarget = context.kotlin.targetsBinding[chunk.representativeTarget()] ?: return OK
         val messageCollector = MessageCollectorAdapter(context, kotlinTarget)
 
         // New mpp project model: modules which is imported from sources sets of the compilations shouldn't be compiled for now.
@@ -614,7 +614,7 @@ class KotlinBuilder : ModuleLevelBuilder(BuilderCategory.SOURCE_PROCESSOR) {
         val sourceToTarget = HashMap<File, ModuleBuildTarget>()
         if (chunk.targets.size > 1) {
             for (target in chunk.targets) {
-                context.kotlinBuildTargets[target]?.sourceFiles?.forEach {
+                context.kotlin.targetsBinding[target]?.sourceFiles?.forEach {
                     sourceToTarget[it] = target
                 }
             }

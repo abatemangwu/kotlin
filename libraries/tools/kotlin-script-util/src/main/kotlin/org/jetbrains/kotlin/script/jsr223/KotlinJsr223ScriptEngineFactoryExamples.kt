@@ -14,39 +14,42 @@
  * limitations under the License.
  */
 
-@file:Suppress("unused") // could be used externally in javax.script.ScriptEngineFactory META-INF file
+@file:Suppress("unused")
+
+// could be used externally in javax.script.ScriptEngineFactory META-INF file
 
 package org.jetbrains.kotlin.script.jsr223
 
 import org.jetbrains.kotlin.cli.common.repl.KotlinJsr223JvmScriptEngineFactoryBase
 import org.jetbrains.kotlin.cli.common.repl.ScriptArgsWithTypes
-import org.jetbrains.kotlin.script.util.*
 import javax.script.Bindings
 import javax.script.ScriptContext
 import javax.script.ScriptEngine
+import kotlin.script.experimental.jvm.util.KotlinJars.compilerWithScriptingClasspath
+import kotlin.script.experimental.jvm.util.scriptCompilationClasspathFromContextOrStdlib
 
 class KotlinJsr223JvmLocalScriptEngineFactory : KotlinJsr223JvmScriptEngineFactoryBase() {
 
     override fun getScriptEngine(): ScriptEngine =
-            KotlinJsr223JvmLocalScriptEngine(
-                this,
-                scriptCompilationClasspathFromContextOrStlib("kotlin-script-util.jar", wholeClasspath = true),
-                KotlinStandardJsr223ScriptTemplate::class.qualifiedName!!,
-                { ctx, types -> ScriptArgsWithTypes(arrayOf(ctx.getBindings(ScriptContext.ENGINE_SCOPE)), types ?: emptyArray()) },
-                arrayOf(Bindings::class)
-            )
+        KotlinJsr223JvmLocalScriptEngine(
+            this,
+            scriptCompilationClasspathFromContextOrStdlib("kotlin-script-util.jar", wholeClasspath = true),
+            KotlinStandardJsr223ScriptTemplate::class.qualifiedName!!,
+            { ctx, types -> ScriptArgsWithTypes(arrayOf(ctx.getBindings(ScriptContext.ENGINE_SCOPE)), types ?: emptyArray()) },
+            arrayOf(Bindings::class)
+        )
 }
 
 class KotlinJsr223JvmDaemonLocalEvalScriptEngineFactory : KotlinJsr223JvmScriptEngineFactoryBase() {
 
     override fun getScriptEngine(): ScriptEngine =
-            KotlinJsr223JvmDaemonCompileScriptEngine(
-                this,
-                KotlinJars.compilerWithScriptingClasspath,
-                scriptCompilationClasspathFromContextOrStlib("kotlin-script-util.jar", wholeClasspath = true),
-                KotlinStandardJsr223ScriptTemplate::class.qualifiedName!!,
-                { ctx, types -> ScriptArgsWithTypes(arrayOf(ctx.getBindings(ScriptContext.ENGINE_SCOPE)), types ?: emptyArray()) },
-                arrayOf(Bindings::class)
-            )
+        KotlinJsr223JvmDaemonCompileScriptEngine(
+            this,
+            compilerWithScriptingClasspath,
+            scriptCompilationClasspathFromContextOrStdlib("kotlin-script-util.jar", wholeClasspath = true),
+            KotlinStandardJsr223ScriptTemplate::class.qualifiedName!!,
+            { ctx, types -> ScriptArgsWithTypes(arrayOf(ctx.getBindings(ScriptContext.ENGINE_SCOPE)), types ?: emptyArray()) },
+            arrayOf(Bindings::class)
+        )
 }
 

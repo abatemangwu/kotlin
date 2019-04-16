@@ -18,6 +18,7 @@ package org.jetbrains.kotlin.idea.refactoring.introduce.introduceVariable
 
 import com.intellij.codeInsight.template.TemplateBuilderImpl
 import com.intellij.codeInsight.template.impl.TemplateManagerImpl
+import com.intellij.lang.injection.InjectedLanguageManager
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Pair

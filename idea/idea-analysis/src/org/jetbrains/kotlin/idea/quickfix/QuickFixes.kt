@@ -29,7 +29,7 @@ class QuickFixes {
     private val actions: Multimap<DiagnosticFactory<*>, IntentionAction> = HashMultimap.create<DiagnosticFactory<*>, IntentionAction>()
 
     init {
-        Extensions.getExtensions(QuickFixContributor.EP_NAME).forEach { it.registerQuickFixes(this) }
+        QuickFixContributor.EP_NAME.extensionList.forEach { it.registerQuickFixes(this) }
     }
 
     fun register(diagnosticFactory: DiagnosticFactory<*>, vararg factory: KotlinIntentionActionsFactory) {

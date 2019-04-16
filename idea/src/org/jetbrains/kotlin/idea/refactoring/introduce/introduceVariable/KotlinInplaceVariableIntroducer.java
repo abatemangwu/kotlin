@@ -11,9 +11,7 @@ import com.intellij.codeInsight.template.impl.TemplateManagerImpl;
 import com.intellij.codeInsight.template.impl.TemplateState;
 import com.intellij.lang.ASTNode;
 import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.application.Result;
 import com.intellij.openapi.command.CommandProcessor;
-import com.intellij.openapi.command.WriteCommandAction;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.editor.markup.RangeHighlighter;
 import com.intellij.openapi.project.Project;
@@ -40,10 +38,10 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.*;
+
+import static com.intellij.openapi.command.WriteCommandAction.writeCommandAction;
 
 public class KotlinInplaceVariableIntroducer<D extends KtCallableDeclaration> extends InplaceVariableIntroducer<KtExpression> {
     private static final Key<KotlinInplaceVariableIntroducer> ACTIVE_INTRODUCER = Key.create("ACTIVE_INTRODUCER");
@@ -234,80 +232,69 @@ public class KotlinInplaceVariableIntroducer<D extends KtCallableDeclaration> ex
     protected final Function0<JComponent> getCreateVarCheckBox() {
         if (myDoNotChangeVar) return null;
 
-        return new Function0<JComponent>() {
-            @Override
-            public JComponent invoke() {
-                final JCheckBox varCheckbox = new NonFocusableCheckBox("Declare with var");
-                varCheckbox.setSelected(isVar);
-                varCheckbox.setMnemonic('v');
-                varCheckbox.addActionListener(new ActionListener() {
-                    @Override
-                    public void actionPerformed(@NotNull ActionEvent e) {
-                        new WriteCommandAction(myProject, getCommandName(), getCommandName()) {
-                            @Override
-                            protected void run(@NotNull Result result) throws Throwable {
-                                PsiDocumentManager.getInstance(myProject).commitDocument(myEditor.getDocument());
+        return () -> {
+            final JCheckBox varCheckbox = new NonFocusableCheckBox("Declare with var");
+            varCheckbox.setSelected(isVar);
+            varCheckbox.setMnemonic('v');
+            varCheckbox.addActionListener(e -> writeCommandAction(myProject)
+                    .withName(getCommandName())
+                    .withGroupId(getCommandName())
+                    .run(() -> {
+                        PsiDocumentManager.getInstance(myProject).commitDocument(myEditor.getDocument());
 
-                                KtPsiFactory psiFactory = new KtPsiFactory(myProject);
-                                PsiElement keyword = varCheckbox.isSelected() ? psiFactory.createVarKeyword() : psiFactory.createValKeyword();
+                        KtPsiFactory psiFactory = new KtPsiFactory(myProject);
+                        PsiElement keyword = varCheckbox.isSelected() ? psiFactory.createVarKeyword() : psiFactory.createValKeyword();
 
-                                PsiElement valOrVar = myDeclaration instanceof KtProperty
-                                                       ? ((KtProperty) myDeclaration).getValOrVarKeyword()
-                                                       : ((KtParameter) myDeclaration).getValOrVarKeyword();
-                                valOrVar.replace(keyword);
-                            }
-                        }.execute();
-                    }
-                });
+                        PsiElement valOrVar = myDeclaration instanceof KtProperty
+                                              ? ((KtProperty) myDeclaration).getValOrVarKeyword()
+                                              : ((KtParameter) myDeclaration).getValOrVarKeyword();
+                        Objects.requireNonNull(valOrVar).replace(keyword);
+                    }));
 
-                return varCheckbox;
-            }
+            return varCheckbox;
         };
     }
 
     protected final void runWriteActionAndRestartRefactoring(final Runnable runnable) {
         final Ref<Boolean> greedyToRight = new Ref<Boolean>();
-        new WriteCommandAction(myProject, getCommandName(), getCommandName()) {
-            @Override
-            protected void run(@NotNull Result result) throws Throwable {
-                PsiDocumentManager.getInstance(myProject).commitDocument(myEditor.getDocument());
+        writeCommandAction(myProject)
+                .withName(getCommandName())
+                .withGroupId(getCommandName())
+                .run(() -> {
+                    PsiDocumentManager.getInstance(myProject).commitDocument(myEditor.getDocument());
 
-                ASTNode identifier = myDeclaration.getNode().findChildByType(KtTokens.IDENTIFIER);
-                if (identifier != null) {
-                    TextRange range = identifier.getTextRange();
-                    RangeHighlighter[] highlighters = myEditor.getMarkupModel().getAllHighlighters();
-                    for (RangeHighlighter highlighter : highlighters) {
-                        if (highlighter.getStartOffset() == range.getStartOffset()) {
-                            if (highlighter.getEndOffset() == range.getEndOffset()) {
-                                greedyToRight.set(highlighter.isGreedyToRight());
-                                highlighter.setGreedyToRight(false);
+                    ASTNode identifier = myDeclaration.getNode().findChildByType(KtTokens.IDENTIFIER);
+                    if (identifier != null) {
+                        TextRange range = identifier.getTextRange();
+                        RangeHighlighter[] highlighters = myEditor.getMarkupModel().getAllHighlighters();
+                        for (RangeHighlighter highlighter : highlighters) {
+                            if (highlighter.getStartOffset() == range.getStartOffset()) {
+                                if (highlighter.getEndOffset() == range.getEndOffset()) {
+                                    greedyToRight.set(highlighter.isGreedyToRight());
+                                    highlighter.setGreedyToRight(false);
+                                }
                             }
                         }
                     }
-                }
 
-                runnable.run();
+                    runnable.run();
 
-                TemplateState templateState =
-                        TemplateManagerImpl.getTemplateState(InjectedLanguageUtil.getTopLevelEditor(myEditor));
-                if (templateState != null) {
-                    myEditor.putUserData(INTRODUCE_RESTART, true);
-                    templateState.gotoEnd(true);
-                }
-            }
-        }.execute();
-        ApplicationManager.getApplication().runReadAction(new Runnable() {
-            @Override
-            public void run() {
-                ASTNode identifier = myDeclaration.getNode().findChildByType(KtTokens.IDENTIFIER);
-                if (identifier != null) {
-                    TextRange range = identifier.getTextRange();
-                    RangeHighlighter[] highlighters = myEditor.getMarkupModel().getAllHighlighters();
-                    for (RangeHighlighter highlighter : highlighters) {
-                        if (highlighter.getStartOffset() == range.getStartOffset()) {
-                            if (highlighter.getEndOffset() == range.getEndOffset()) {
-                                highlighter.setGreedyToRight(greedyToRight.get());
-                            }
+                    TemplateState templateState = TemplateManagerImpl.getTemplateState(InjectedLanguageUtil.getTopLevelEditor(myEditor));
+                    if (templateState != null) {
+                        myEditor.putUserData(INTRODUCE_RESTART, true);
+                        templateState.gotoEnd(true);
+                    }
+                });
+
+        ApplicationManager.getApplication().runReadAction(() -> {
+            ASTNode identifier = myDeclaration.getNode().findChildByType(KtTokens.IDENTIFIER);
+            if (identifier != null) {
+                TextRange range = identifier.getTextRange();
+                RangeHighlighter[] highlighters = myEditor.getMarkupModel().getAllHighlighters();
+                for (RangeHighlighter highlighter : highlighters) {
+                    if (highlighter.getStartOffset() == range.getStartOffset()) {
+                        if (highlighter.getEndOffset() == range.getEndOffset()) {
+                            highlighter.setGreedyToRight(greedyToRight.get());
                         }
                     }
                 }

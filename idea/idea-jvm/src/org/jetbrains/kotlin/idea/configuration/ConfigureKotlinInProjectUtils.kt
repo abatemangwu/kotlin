@@ -195,7 +195,7 @@ fun getConfiguratorByName(name: String): KotlinProjectConfigurator? {
     return allConfigurators().firstOrNull { it.name == name }
 }
 
-fun allConfigurators() = Extensions.getExtensions(KotlinProjectConfigurator.EP_NAME)
+fun allConfigurators() = KotlinProjectConfigurator.EP_NAME.extensionList
 
 fun getCanBeConfiguredModules(project: Project, configurator: KotlinProjectConfigurator): List<Module> {
     return ModuleSourceRootMap(project).groupByBaseModules(project.allModules())
@@ -233,8 +233,8 @@ fun getConfigurationPossibilitiesForConfigureNotification(
         var moduleAlreadyConfigured = false
         for (configurator in configurators) {
             if (moduleCanBeConfigured && configurator in runnableConfigurators) continue
-            val status = configurator.getStatus(moduleSourceRootGroup)
-            when (status) {
+            @Suppress("NON_EXHAUSTIVE_WHEN")
+            when (configurator.getStatus(moduleSourceRootGroup)) {
                 ConfigureKotlinStatus.CAN_BE_CONFIGURED -> {
                     moduleCanBeConfigured = true
                     runnableConfigurators.add(configurator)

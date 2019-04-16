@@ -120,8 +120,8 @@ class KotlinChangeSignatureDialog(
         field.font = Font(plainFont.fontName, plainFont.style, 12)
 
         if (selected && focused) {
-            panel.background = UIUtil.getTableSelectionBackground()
-            field.setAsRendererWithSelection(UIUtil.getTableSelectionBackground(), UIUtil.getTableSelectionForeground())
+            panel.background = UIUtil.getTableSelectionBackground(true)
+            field.setAsRendererWithSelection(UIUtil.getTableSelectionBackground(true), UIUtil.getTableSelectionForeground())
         } else {
             panel.background = UIUtil.getTableBackground()
             if (selected && !focused) {

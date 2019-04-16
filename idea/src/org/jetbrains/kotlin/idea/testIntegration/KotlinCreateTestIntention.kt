@@ -113,8 +113,7 @@ class KotlinCreateTestIntention : SelfTargetingRangeIntention<KtNamedDeclaration
             override fun invoke(project: Project, editor: Editor?, element: PsiElement) {
                 val srcModule = ModuleUtilCore.findModuleForPsiElement(element) ?: return
                 val propertiesComponent = PropertiesComponent.getInstance()
-                val testFolders = HashSet<VirtualFile>()
-                checkForTestRoots(srcModule, testFolders)
+                val testFolders = computeTestRoots(srcModule)
                 if (testFolders.isEmpty() && !propertiesComponent.getBoolean("create.test.in.the.same.root")) {
                     if (Messages.showOkCancelDialog(
                             project,
@@ -181,12 +180,14 @@ class KotlinCreateTestIntention : SelfTargetingRangeIntention<KtNamedDeclaration
                                         .forEach { it.j2k()?.let { declaration -> existingClass.addDeclaration(declaration) } }
                                     generatedClass.delete()
                                 }
+                                @Suppress("IMPLICIT_CAST_TO_ANY")
                                 NavigationUtil.activateFileWithPsiElement(existingClass)
                             } else {
                                 with(PsiDocumentManager.getInstance(project)) {
                                     getDocument(generatedFile)?.let { doPostponedOperationsAndUnblockDocument(it) }
                                 }
 
+                                @Suppress("IMPLICIT_CAST_TO_ANY")
                                 JavaToKotlinAction.convertFiles(listOf(generatedFile), project, false).singleOrNull()
                             }
                         }

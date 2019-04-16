@@ -18,6 +18,8 @@ package org.jetbrains.kotlin.idea.highlighter.markers
 
 import com.intellij.codeInsight.daemon.DaemonBundle
 import com.intellij.codeInsight.daemon.impl.GutterIconTooltipHelper
+import com.intellij.codeInsight.daemon.impl.GutterTooltipHelper
+import com.intellij.codeInsight.navigation.BackgroundUpdaterTask
 import com.intellij.codeInsight.navigation.ListBackgroundUpdaterTask
 import com.intellij.ide.util.MethodCellRenderer
 import com.intellij.ide.util.PsiElementListCellRenderer
@@ -176,8 +178,7 @@ fun buildNavigateToOverriddenMethodPopup(e: MouseEvent?, element: PsiElement?): 
 private class OverridingMethodsUpdater(
     private val myMethod: PsiMethod,
     private val myRenderer: PsiElementListCellRenderer<out PsiElement>
-) :
-    ListBackgroundUpdaterTask(myMethod.project, "Searching for overriding methods") {
+) : BackgroundUpdaterTask(myMethod.project, "Searching for overriding methods", null) {
     override fun getCaption(size: Int): String {
         return if (myMethod.hasModifierProperty(PsiModifier.ABSTRACT))
             DaemonBundle.message("navigation.title.implementation.method", myMethod.name, size)!!
@@ -189,7 +190,7 @@ private class OverridingMethodsUpdater(
         super.run(indicator)
         val processor = object : CommonProcessors.CollectProcessor<PsiMethod>() {
             override fun process(psiMethod: PsiMethod): Boolean {
-                if (!updateComponent(psiMethod, myRenderer.comparator)) {
+                if (!updateComponent(psiMethod)) {
                     indicator.cancel()
                 }
                 indicator.checkCanceled()

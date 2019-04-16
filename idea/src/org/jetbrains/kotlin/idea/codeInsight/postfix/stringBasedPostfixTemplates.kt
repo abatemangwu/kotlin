@@ -40,7 +40,7 @@ internal abstract class ConstantStringBasedPostfixTemplate(
     desc: String,
     private val template: String,
     selector: PostfixTemplateExpressionSelector
-) : StringBasedPostfixTemplate(name, desc, selector) {
+) : StringBasedPostfixTemplate(name, desc, selector, null) {
     override fun getTemplateString(element: PsiElement) = template
 
     override fun getElementToRemove(expr: PsiElement?) = expr

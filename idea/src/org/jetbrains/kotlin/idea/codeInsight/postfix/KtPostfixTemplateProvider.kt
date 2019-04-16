@@ -94,7 +94,7 @@ private object KtNotPostfixTemplate : NotPostfixTemplate(
 
 private class KtIntroduceVariablePostfixTemplate(
     val kind: String
-) : PostfixTemplateWithExpressionSelector(kind, "$kind name = expression", createExpressionSelector()) {
+) : PostfixTemplateWithExpressionSelector(null, kind, "$kind name = expression", createExpressionSelector(), null) {
     override fun expandForChooseExpression(expression: PsiElement, editor: Editor) {
         KotlinIntroduceVariableHandler.doRefactoring(
             expression.project, editor, expression as KtExpression,

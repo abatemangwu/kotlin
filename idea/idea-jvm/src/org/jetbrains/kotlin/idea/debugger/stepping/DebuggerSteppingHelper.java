@@ -179,7 +179,7 @@ public class DebuggerSteppingHelper {
                 }
             }
         }
-        for (DebuggerClassFilterProvider provider : Extensions.getExtensions(DebuggerClassFilterProvider.EP_NAME)) {
+        for (DebuggerClassFilterProvider provider : DebuggerClassFilterProvider.EP_NAME.getExtensionList()) {
             for (ClassFilter filter : provider.getFilters()) {
                 if (filter.isEnabled()) {
                     activeFilters.add(filter);

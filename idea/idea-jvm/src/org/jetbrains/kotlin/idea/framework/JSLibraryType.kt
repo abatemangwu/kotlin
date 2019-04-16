@@ -24,6 +24,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.ProjectBundle
 import com.intellij.openapi.roots.OrderRootType
 import com.intellij.openapi.roots.libraries.*
+import com.intellij.openapi.roots.libraries.ui.DescendentBasedRootFilter
 import com.intellij.openapi.roots.libraries.ui.FileTypeBasedRootFilter
 import com.intellij.openapi.roots.libraries.ui.LibraryEditorComponent
 import com.intellij.openapi.roots.libraries.ui.RootDetector
@@ -50,7 +51,7 @@ class JSLibraryType : LibraryType<DummyLibraryProperties>(JSLibraryKind) {
     override fun getIcon(properties: DummyLibraryProperties?) = KotlinIcons.JS
 
     companion object {
-        fun getInstance() = Extensions.findExtension(EP_NAME, JSLibraryType::class.java)
+        fun getInstance() = EP_NAME.findExtensionOrFail(JSLibraryType::class.java)
     }
 
     object RootsComponentDescriptor : DefaultLibraryRootsComponentDescriptor() {
@@ -70,8 +71,8 @@ class JSLibraryType : LibraryType<DummyLibraryProperties>(JSLibraryKind) {
 
         override fun getRootDetectors(): List<RootDetector> {
             return arrayListOf(
-                    JSRootFilter,
-                    FileTypeBasedRootFilter(OrderRootType.SOURCES, false, KotlinFileType.INSTANCE, "sources")
+                JSRootFilter,
+                DescendentBasedRootFilter.createFileTypeBasedFilter(OrderRootType.SOURCES, false, KotlinFileType.INSTANCE, "sources")
             )
         }
     }

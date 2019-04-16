@@ -22,7 +22,7 @@ class SynchronizedStatementConversion(private val context: ConversionContext) : 
         )
         val synchronizedCall =
             JKKtCallExpressionImpl(
-                context.symbolProvider.provideByFqNameMulti("kotlin.synchronized"),
+                context.symbolProvider.provideByFqName("kotlin.synchronized", true),
                 JKArgumentListImpl(
                     element.lockExpression,
                     lambdaBody
