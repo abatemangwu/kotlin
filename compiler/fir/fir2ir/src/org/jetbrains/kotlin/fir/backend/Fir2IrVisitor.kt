@@ -627,7 +627,8 @@ internal class Fir2IrVisitor(
         val symbol = calleeReference.toSymbol(declarationStorage)
         return typeRef.convertWithOffsets { startOffset, endOffset ->
             when {
-                symbol is IrFunctionSymbol -> IrCallImpl(startOffset, endOffset, type, symbol)
+                symbol is IrConstructorSymbol -> IrConstructorCallImpl.fromSymbolOwner(startOffset, endOffset, type, symbol)
+                symbol is IrSimpleFunctionSymbol -> IrCallImpl(startOffset, endOffset, type, symbol)
                 symbol is IrPropertySymbol && symbol.isBound -> {
                     val getter = symbol.owner.getter
                     if (getter != null) {
@@ -769,7 +770,9 @@ internal class Fir2IrVisitor(
                 startOffset, endOffset, anonymousClassType, IrStatementOrigin.OBJECT_LITERAL,
                 listOf(
                     anonymousClass,
-                    IrCallImpl(startOffset, endOffset, anonymousClassType, anonymousClass.constructors.first().symbol)
+                    IrConstructorCallImpl.fromSymbolOwner(
+                        startOffset, endOffset, anonymousClassType, anonymousClass.constructors.first().symbol
+                    )
                 )
             )
         }
