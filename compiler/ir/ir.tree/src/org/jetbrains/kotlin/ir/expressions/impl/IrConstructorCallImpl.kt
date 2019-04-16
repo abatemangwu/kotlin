@@ -32,14 +32,14 @@ class IrConstructorCallImpl(
         visitor.visitConstructorCall(this, data)
 
     companion object {
-        fun fromSymbolDescriptor(
+        fun fromSubstitutedDescriptor(
             startOffset: Int,
             endOffset: Int,
             type: IrType,
             constructorSymbol: IrConstructorSymbol,
+            constructorDescriptor: ClassConstructorDescriptor,
             origin: IrStatementOrigin? = null
         ): IrConstructorCallImpl {
-            val constructorDescriptor = constructorSymbol.descriptor
             val classTypeParametersCount = constructorDescriptor.constructedClass.original.declaredTypeParameters.size
             val totalTypeParametersCount = constructorDescriptor.typeParameters.size
             val valueParametersCount = constructorDescriptor.valueParameters.size
@@ -57,11 +57,13 @@ class IrConstructorCallImpl(
         }
 
         fun fromSymbolDescriptor(
+            startOffset: Int,
+            endOffset: Int,
             type: IrType,
             constructorSymbol: IrConstructorSymbol,
             origin: IrStatementOrigin? = null
-        ) =
-            fromSymbolDescriptor(UNDEFINED_OFFSET, UNDEFINED_OFFSET, type, constructorSymbol, origin)
+        ): IrConstructorCallImpl =
+            fromSubstitutedDescriptor(startOffset, endOffset, type, constructorSymbol, constructorSymbol.descriptor, origin)
 
         fun fromSymbolOwner(
             startOffset: Int,
